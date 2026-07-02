@@ -101,5 +101,34 @@ No Windows, a validação pode ser rodada com:
 rodar_testes_t6.bat
 ```
 
+### Como regenerar o Lexer/Parser com ANTLR
+
+Se você precisar regenerar os arquivos do Lexer/Parser a partir da gramática (`MLDeclara.g4`), instale o jar do ANTLR e execute (exemplo usando a versão 4.13.2):
+
+```bash
+# baixar o jar do ANTLR (exemplo):
+wget https://www.antlr.org/download/antlr-4.13.2-complete.jar
+
+# gerar para Python3 (executar no diretório que contém MLDeclara.g4):
+java -jar antlr-4.13.2-complete.jar -Dlanguage=Python3 MLDeclara.g4
+
+# Opcional: mover/organizar os arquivos gerados em src/main/python/... conforme a estrutura do projeto
+```
+
+Observação: é recomendado Java 11+ e usar a mesma versão do runtime Python (`antlr4-python3-runtime`) compatível com o jar.
+
+### Instalar dependências e rodar testes
+
+Recomenda-se criar um ambiente virtual e instalar dependências via `requirements.txt` (arquivo incluído neste repositório):
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # ou `.venv\Scripts\activate` no Windows
+pip install -r requirements.txt
+
+# Executar a suíte de testes
+python -m pytest -q
+```
+
 ## Observação
 Este README descreve o cenário atual do T6, que concentra-se na análise léxica/sintática, na construção da AST e no tratamento de erros para a linguagem ML-Declara.
