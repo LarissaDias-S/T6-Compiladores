@@ -29,6 +29,8 @@ from MLDeclaraLexer import MLDeclaraLexer
 from MLDeclaraParser import MLDeclaraParser
 from error_listener import MLDeclaraErrorListener
 from ast_builder import ASTBuilder
+from semantic import SemanticVisitor
+from codegen import CodeGenerator
 
 
 def compilar(codigo_fonte: str, nome_arquivo: str = "<stdin>"):
@@ -111,31 +113,22 @@ def compilar(codigo_fonte: str, nome_arquivo: str = "<stdin>"):
     builder = ASTBuilder()
     ast     = builder.visit(parse_tree)
 
-    # ── ETAPA 4: Análise Semântica (Pessoa 2) ───────────────────────
-    # Importação opcional — só ativa se o módulo existir
-    try:
-        from semantic import SemanticVisitor  # módulo da Pessoa 2
-        semantic = SemanticVisitor()
-        erros_semanticos = semantic.verificar(ast)
-        if erros_semanticos:
-            print(f"\n{'─'*55}")
-            print(f"  Erros semânticos em '{nome_arquivo}':")
-            print(f"{'─'*55}")
-            for erro in erros_semanticos:
-                print(f"  {erro}")
-            print(f"{'─'*55}\n")
-            return None
-    except ImportError:
-        pass  # Módulo ainda não implementado pela Pessoa 2
+    # ── ETAPA 4: Análise Semântica ─────────────────────────────────
+    semantic = SemanticVisitor()
+    erros_semanticos = semantic.verificar(ast)
+    if erros_semanticos:
+        print(f"\n{'─'*55}")
+        print(f"  Erros semânticos em '{nome_arquivo}':")
+        print(f"{'─'*55}")
+        for erro in erros_semanticos:
+            print(f"  {erro}")
+        print(f"{'─'*55}\n")
+        return None
 
-    # ── ETAPA 5: Geração de Código (Pessoa 3) ───────────────────────
-    try:
-        from codegen import CodeGenerator  # módulo da Pessoa 3
-        gen    = CodeGenerator()
-        codigo = gen.gerar(ast)
-        print(codigo)
-    except ImportError:
-        pass  # Módulo ainda não implementado pela Pessoa 3
+    # ── ETAPA 5: Geração de Código ──────────────────────────────────
+    gen = CodeGenerator()
+    codigo = gen.gerar(ast)
+    print(codigo)
 
     return ast
 
