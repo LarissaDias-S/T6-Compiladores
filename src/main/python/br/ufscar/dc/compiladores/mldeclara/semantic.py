@@ -13,9 +13,11 @@ class SemanticVisitor:
         self.tabela_simbolos: Dict[str, Dict[str, str]] = {}
         self.modelo_para_hiperparams = {
             "RandomForest": {"n_estimators": "int", "max_depth": "int", "random_state": "int"},
-            "XGBoost": {"n_estimators": "int", "max_depth": "int", "learning_rate": "float"},
+            # aceita random_state também (ex.: para reproduzibilidade)
+            "XGBoost": {"n_estimators": "int", "max_depth": "int", "learning_rate": "float", "random_state": "int"},
             "LinearRegression": {},
-            "LogisticRegression": {"max_iter": "int", "C": "float"},
+            # LogisticRegression pode receber random_state para reprodutibilidade
+            "LogisticRegression": {"max_iter": "int", "C": "float", "random_state": "int"},
             "SVM": {"C": "float", "kernel": "str"},
         }
         self.metricas_por_modelo = {
@@ -140,7 +142,8 @@ class SemanticVisitor:
                         f"Erro semântico: o hiperparâmetro '{hiper.nome}' deve ser um inteiro."
                     )
                     continue
-                if valor < 1:
+                # Alguns hiperparâmetros inteiros aceitam 0 como valor válido
+                if hiper.nome != "random_state" and valor < 1:
                     self.erros.append(
                         f"Erro semântico: o hiperparâmetro '{hiper.nome}' deve ser maior ou igual a 1."
                     )
