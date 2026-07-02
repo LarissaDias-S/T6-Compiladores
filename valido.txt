@@ -1,2 +1,0 @@
-algoritmo 
-fim_algoritmo 
