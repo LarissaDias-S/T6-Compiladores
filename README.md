@@ -28,10 +28,10 @@ A implementação atual cobre a etapa de ALS (análise léxica e sintática), a 
 - Casos de teste válidos e inválidos em [casos-de-teste/6.casos_teste_t6](casos-de-teste/6.casos_teste_t6)
 - Script de execução dos testes em [rodar_testes_t6.bat](rodar_testes_t6.bat)
 
-### Em andamento ou pendente
-- Análise semântica
-- Geração de código
-- Integração completa do pipeline .mld → AST → validação → código
+### Em andamento / Observações
+- Análise semântica: implementada (ver `src/main/python/br/ufscar/dc/compiladores/mldeclara/semantic.py`)
+- Geração de código: implementação inicial presente em `codegen.py`, pode ser refinada
+- Integração completa do pipeline: testes automatizados cobrem parsing e semântica
 
 ## Estrutura do Repositório
 - [src/main/antlr4_mldeclara](src/main/antlr4_mldeclara) — gramática ANTLR4

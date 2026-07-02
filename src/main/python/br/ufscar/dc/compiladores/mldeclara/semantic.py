@@ -25,6 +25,15 @@ class SemanticVisitor:
 
     def verificar(self, ast: ProgramaNode) -> List[str]:
         """Retorna a lista de erros semânticos encontrados."""
+        """
+        Executa todas as validações semânticas no AST fornecido.
+
+        Args:
+            ast: `ProgramaNode` construído pelo `ASTBuilder`.
+
+        Returns:
+            Lista de strings com as mensagens de erro (vazia se sem erros).
+        """
         self.erros = []
         self.tabela_simbolos = {}
 
@@ -42,6 +51,11 @@ class SemanticVisitor:
         return self.erros
 
     def _validar_dataset(self, ast: ProgramaNode) -> None:
+        """Valida a presença do bloco DATASET e popula a tabela de símbolos.
+
+        Adiciona cada coluna declarada em `ast.dataset.colunas` na
+        `self.tabela_simbolos` para uso pelas demais verificações.
+        """
         if not ast.dataset:
             self.erros.append("Erro semântico: o programa deve declarar um bloco DATASET.")
             return
@@ -54,6 +68,7 @@ class SemanticVisitor:
             self.tabela_simbolos[coluna] = {"tipo": "coluna", "origem": "dataset"}
 
     def _validar_target_var(self, ast: ProgramaNode) -> None:
+        """Valida que a diretiva TARGET_VAR esteja presente e seja uma coluna válida."""
         if not ast.target_var:
             self.erros.append("Erro semântico: a diretiva TARGET_VAR é obrigatória.")
             return
@@ -65,6 +80,7 @@ class SemanticVisitor:
             )
 
     def _validar_features(self, ast: ProgramaNode) -> None:
+        """Valida a diretiva FEATURES: existência, presença no dataset e duplicatas."""
         if not ast.features:
             self.erros.append("Erro semântico: a diretiva FEATURES é obrigatória.")
             return
@@ -84,6 +100,7 @@ class SemanticVisitor:
             self.erros.append("Erro semântico: a lista de FEATURES contém nomes duplicados.")
 
     def _validar_modelos(self, ast: ProgramaNode) -> None:
+        """Valida blocos MODEL: nome, algoritmo suportado e hiperparâmetros."""
         if not ast.modelos:
             self.erros.append("Erro semântico: o programa deve declarar pelo menos um bloco MODEL.")
             return
@@ -102,6 +119,10 @@ class SemanticVisitor:
             self._validar_hiperparametros(modelo)
 
     def _validar_hiperparametros(self, modelo: ModeloNode) -> None:
+        """Verifica hiperparâmetros de um `ModeloNode` contra a tabela por-modelo.
+
+        Valida tanto a presença do hiperparâmetro quanto o tipo/intervalo do valor.
+        """
         hiperparams_validos = self.modelo_para_hiperparams.get(modelo.algoritmo, {})
         for hiper in modelo.hiperparametros:
             if hiper.nome not in hiperparams_validos:
@@ -137,6 +158,7 @@ class SemanticVisitor:
                     )
 
     def _validar_metricas(self, ast: ProgramaNode) -> None:
+        """Valida a diretiva METRICS: métricas conhecidas, repetição e compatibilidade."""
         if not ast.metricas:
             self.erros.append("Erro semântico: a diretiva METRICS é obrigatória.")
             return
@@ -167,12 +189,14 @@ class SemanticVisitor:
                     )
 
     def _classificar_modelo(self, algoritmo: str) -> str:
+        """Classifica um algoritmo em 'classificacao' ou 'regressao'."""
         modelos_classificacao = {"RandomForest", "XGBoost", "LogisticRegression", "SVM"}
         if algoritmo in modelos_classificacao:
             return "classificacao"
         return "regressao"
 
     def _validar_output(self, ast: ProgramaNode) -> None:
+        """Valida a diretiva OUTPUT e verifica a extensão do arquivo de saída."""
         if not ast.output_path:
             self.erros.append("Erro semântico: a diretiva OUTPUT é obrigatória.")
             return
