@@ -24,6 +24,13 @@ import io
 # Garante que o diretório do módulo esteja no path (funciona independente de onde main.py é chamado)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Evita UnicodeEncodeError ao imprimir acentos/caracteres de desenho de caixa
+# em consoles Windows cujo codepage padrão (cp1252) não os suporta.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 from antlr4 import CommonTokenStream, InputStream
 from MLDeclaraLexer import MLDeclaraLexer
 from MLDeclaraParser import MLDeclaraParser
@@ -134,17 +141,49 @@ def compilar(codigo_fonte: str, nome_arquivo: str = "<stdin>"):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Uso: python main.py <arquivo.mld>")
+    args = sys.argv[1:]
+    output_path = None
+    if "-o" in args:
+        idx = args.index("-o")
+        args.pop(idx)
+        output_path = args.pop(idx)
+    elif "--output" in args:
+        idx = args.index("--output")
+        args.pop(idx)
+        output_path = args.pop(idx)
+
+    if len(args) < 1:
+        print("Uso: python main.py <arquivo.mld> [-o <arquivo_saida.py>]")
         sys.exit(1)
 
-    caminho = sys.argv[1]
+    caminho = args[0]
     try:
         with open(caminho, encoding="utf-8") as f:
             codigo = f.read()
     except FileNotFoundError:
         print(f"Arquivo não encontrado: {caminho}")
         sys.exit(1)
+
+    if output_path:
+        # Captura a saída de compilar() para gravar em disco como UTF-8,
+        # evitando reencode indesejado por redirecionamento (>) do PowerShell.
+        buffer = io.StringIO()
+        _stdout_orig = sys.stdout
+        sys.stdout = buffer
+        try:
+            resultado = compilar(codigo, caminho)
+        finally:
+            sys.stdout = _stdout_orig
+
+        conteudo = buffer.getvalue()
+        if resultado is None:
+            print(conteudo, end="")
+            sys.exit(1)
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(conteudo)
+        print(f"Código gerado salvo em: {output_path}")
+        return
 
     resultado = compilar(codigo, caminho)
     if resultado is None:
