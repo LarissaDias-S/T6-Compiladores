@@ -1,0 +1,11 @@
+﻿idade,salario,regiao,comprou
+25,3000,Norte,nao
+45,8000,Sul,sim
+32,4500,Centro,nao
+54,12000,Sul,sim
+21,2000,Norte,nao
+60,9500,Centro,sim
+28,3500,Norte,nao
+39,7200,Sul,sim
+41,6000,Centro,sim
+30,4800,Sul,nao
