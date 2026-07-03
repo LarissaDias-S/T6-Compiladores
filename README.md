@@ -129,6 +129,3 @@ pip install -r requirements.txt
 # Executar a suíte de testes
 python -m pytest -q
 ```
-
-## Observação
-Este README descreve o cenário atual do T6, que concentra-se na análise léxica/sintática, na construção da AST e no tratamento de erros para a linguagem ML-Declara.
