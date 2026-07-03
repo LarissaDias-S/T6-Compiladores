@@ -128,6 +128,11 @@ def compilar(codigo_fonte: str, nome_arquivo: str = "<stdin>"):
     # ── ETAPA 5: Geração de Código ──────────────────────────────────
     gen = CodeGenerator()
     codigo = gen.gerar(ast)
+    
+    # INTERCEPTAÇÃO DE SEGURANÇA: Garante a correção caso o Python use o codegen antigo
+    if "RandomForest(" in codigo:
+        codigo = codigo.replace("RandomForest(", "RandomForestClassifier(")
+        
     print(codigo)
 
     return ast
