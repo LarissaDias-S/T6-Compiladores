@@ -1,0 +1,16 @@
+# Caso de teste de codegen — classificação com RandomForest
+DATASET "tests/codegen/data/classification.csv"
+  COLUMNS idade, salario, regiao, comprou
+END
+
+TARGET_VAR comprou
+FEATURES idade, salario, regiao
+
+MODEL clf RandomForest
+  n_estimators = 50
+  max_depth = 5
+  random_state = 42
+END
+
+METRICS accuracy, f1_score
+OUTPUT "tests/codegen/output/classification_model.pkl"
