@@ -1,32 +1,10 @@
-<<<<<<< HEAD
-"""Geração de código Python a partir da AST validada de ML-Declara.
-
-Recebe um `ProgramaNode` já validado semanticamente e produz um script
-Python executável que:
-  1. Carrega o dataset CSV declarado
-  2. Separa features (X) e variável alvo (y)
-  3. Codifica colunas categóricas automaticamente
-  4. Divide em treino/teste (80/20, random_state=42)
-  5. Instancia, treina e avalia cada modelo declarado
-  6. Imprime as métricas solicitadas
-  7. Serializa o último modelo treinado via joblib.dump
-"""
-
-from __future__ import annotations
-
-from typing import Dict, List, Set, Tuple
-=======
 """Geração de código Python a partir da AST validada de ML-Declara."""
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
 
 from __future__ import annotations
 from typing import Dict, List, Set, Tuple
 from mld_ast import HiperparametroNode, ModeloNode, ProgramaNode
 
-<<<<<<< HEAD
 # Algoritmo ML-Declara → (módulo de import, classe sklearn/xgboost)
-=======
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
 _ALGORITMO_IMPORTS: Dict[str, Tuple[str, str]] = {
     "RandomForest": ("sklearn.ensemble", "RandomForestClassifier"),
     "XGBoost": ("xgboost", "XGBClassifier"),
@@ -35,10 +13,7 @@ _ALGORITMO_IMPORTS: Dict[str, Tuple[str, str]] = {
     "SVM": ("sklearn.svm", "SVC"),
 }
 
-<<<<<<< HEAD
 # Métrica ML-Declara → (módulo, função sklearn)
-=======
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
 _METRICA_IMPORTS: Dict[str, Tuple[str, str]] = {
     "accuracy": ("sklearn.metrics", "accuracy_score"),
     "f1_score": ("sklearn.metrics", "f1_score"),
@@ -50,16 +25,9 @@ _METRICA_IMPORTS: Dict[str, Tuple[str, str]] = {
 }
 
 _MODELOS_CLASSIFICACAO = {"RandomForest", "XGBoost", "LogisticRegression", "SVM"}
-<<<<<<< HEAD
-
-# Proporção fixa de split treino/teste (80/20)
 _TEST_SIZE = 0.2
 _RANDOM_STATE = 42
 
-=======
-_TEST_SIZE = 0.2
-_RANDOM_STATE = 42
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
 
 class CodeGenerator:
     """Gera um script Python completo a partir da AST."""
@@ -85,39 +53,21 @@ class CodeGenerator:
         return "\n".join(linhas)
 
     def _gerar_cabecalho(self) -> List[str]:
-<<<<<<< HEAD
         return [
             '"""',
             "Script gerado automaticamente pelo compilador ML-Declara.",
-            "Treina o(s) modelo(s) declarado(s), avalia métricas e salva o artefato.",
             '"""',
             "",
         ]
 
     def _gerar_imports(self, ast: ProgramaNode) -> List[str]:
-        linhas = ["import sys", "import os", "import joblib", "import pandas as pd", "import numpy as np"]
-        linhas.append(
-            "if hasattr(sys.stdout, 'reconfigure'):\n"
-            "    sys.stdout.reconfigure(encoding='utf-8', errors='replace')"
-        )
+        linhas = ["import os", "import joblib", "import pandas as pd", "import numpy as np"]
         linhas.append("from sklearn.model_selection import train_test_split")
 
         modulos_modelo: Set[Tuple[str, str]] = set()
         for modelo in ast.modelos:
             if modelo.algoritmo in _ALGORITMO_IMPORTS:
                 modulos_modelo.add(_ALGORITMO_IMPORTS[modelo.algoritmo])
-=======
-        return ['"""', "Script gerado automaticamente pelo compilador ML-Declara.", '"""', ""]
-
-    def _gerar_imports(self, ast: ProgramaNode) -> List[str]:
-        linhas = ["import os", "import joblib", "import pandas as pd", "import numpy as np", "from sklearn.model_selection import train_test_split"]
-
-        modulos_modelo: Set[Tuple[str, str]] = set()
-        for modelo in ast.modelos:
-            alg_limpo = str(modelo.algoritmo).replace('"', '').replace("'", "").strip()
-            if alg_limpo in _ALGORITMO_IMPORTS:
-                modulos_modelo.add(_ALGORITMO_IMPORTS[alg_limpo])
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
 
         for modulo, classe in sorted(modulos_modelo):
             linhas.append(f"from {modulo} import {classe}")
@@ -136,11 +86,7 @@ class CodeGenerator:
         return linhas
 
     def _precisa_label_encoder(self, ast: ProgramaNode) -> bool:
-<<<<<<< HEAD
         return any(m.algoritmo in _MODELOS_CLASSIFICACAO for m in ast.modelos)
-=======
-        return any(str(m.algoritmo).replace('"', '').replace("'", "").strip() in _MODELOS_CLASSIFICACAO for m in ast.modelos)
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
 
     def _gerar_carregamento(self, ast: ProgramaNode) -> List[str]:
         return [
@@ -151,21 +97,11 @@ class CodeGenerator:
             f"OUTPUT_PATH = {ast.output_path!r}",
             "",
             "df = pd.read_csv(DATASET_PATH)",
-<<<<<<< HEAD
-            "missing_cols = set(FEATURES + [TARGET_VAR]) - set(df.columns)",
-            "if missing_cols:",
-            "    raise ValueError(f'Colunas ausentes no CSV: {sorted(missing_cols)}')",
-=======
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
         ]
 
     def _gerar_preprocessamento(self, ast: ProgramaNode) -> List[str]:
         linhas = [
             "# --- Pré-processamento ---",
-<<<<<<< HEAD
-            "# Separa features e alvo; codifica colunas categóricas com one-hot encoding",
-=======
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
             "X = df[FEATURES].copy()",
             "y = df[TARGET_VAR].copy()",
             "",
@@ -173,77 +109,41 @@ class CodeGenerator:
             "if cat_cols:",
             "    X = pd.get_dummies(X, columns=cat_cols, drop_first=False)",
         ]
-<<<<<<< HEAD
 
         if self._precisa_label_encoder(ast):
             linhas.extend([
                 "",
-                "# Codifica o alvo categórico para modelos de classificação",
-                "label_encoder = None",
-=======
-        if self._precisa_label_encoder(ast):
-            linhas.extend([
-                "",
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
                 "if y.dtype == 'object' or str(y.dtype) == 'string':",
                 "    label_encoder = LabelEncoder()",
                 "    y = label_encoder.fit_transform(y)",
             ])
-<<<<<<< HEAD
 
-=======
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
         return linhas
 
     def _gerar_split(self) -> List[str]:
         return [
-<<<<<<< HEAD
-            "# --- Divisão treino/teste (80/20) ---",
-=======
             "# --- Divisão treino/teste ---",
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
             f"X_train, X_test, y_train, y_test = train_test_split(",
             f"    X, y, test_size={_TEST_SIZE}, random_state={_RANDOM_STATE}",
             ")",
         ]
 
     def _gerar_treinamento(self, modelo: ModeloNode, metricas: List[str]) -> List[str]:
-<<<<<<< HEAD
-        # 1. Limpa aspas e espaços invisíveis que vieram do Lexer/AST
-        alg_limpo = str(modelo.algoritmo).replace('"', '').replace("'", "").strip()
-
-        # 2. Busca no dicionário de forma segura. Se achar, pega a classe do scikit-learn.
-        if alg_limpo in _ALGORITMO_IMPORTS:
-            classe = _ALGORITMO_IMPORTS[alg_limpo][1]
-        else:
-            classe = alg_limpo  # Fallback caso o aluno digite um modelo não mapeado
-=======
-        alg_limpo = str(modelo.algoritmo).replace('"', '').replace("'", "").strip()
-        
-        if alg_limpo in _ALGORITMO_IMPORTS:
-            classe = _ALGORITMO_IMPORTS[alg_limpo][1]
-        else:
-            classe = alg_limpo
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
-
+        classe = _ALGORITMO_IMPORTS[modelo.algoritmo][1]
         hiperparams = ", ".join(self._formatar_hiperparametro(h) for h in modelo.hiperparametros)
         args = hiperparams if hiperparams else ""
 
         linhas = [
-<<<<<<< HEAD
-            f"# --- Modelo: {modelo.nome} ({alg_limpo}) ---",
-=======
             f"# --- Modelo: {modelo.nome} ---",
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
             f"{modelo.nome} = {classe}({args})" if args else f"{modelo.nome} = {classe}()",
             f"{modelo.nome}.fit(X_train, y_train)",
             f"y_pred_{modelo.nome} = {modelo.nome}.predict(X_test)",
             "",
-            f"print('=== Métricas — {modelo.nome} ({alg_limpo}) ===')",
+            f"print('=== Métricas — {modelo.nome} ({modelo.algoritmo}) ===')",
         ]
 
         for metrica in metricas:
-            linhas.extend(self._gerar_calculo_metrica(metrica, modelo.nome, alg_limpo))
+            linhas.extend(self._gerar_calculo_metrica(metrica, modelo.nome, modelo.algoritmo))
 
         return linhas
 
@@ -253,39 +153,6 @@ class CodeGenerator:
 
         if metrica == "accuracy":
             return [f"print(f'  accuracy: {{accuracy_score(y_test, {y_pred}):.4f}}')"]
-<<<<<<< HEAD
-
-        if metrica == "f1_score":
-            avg = '"binary"' if is_classificacao else '"weighted"'
-            return [
-                f"print(f'  f1_score: {{f1_score(y_test, {y_pred}, average={avg}):.4f}}')",
-            ]
-
-        if metrica == "precision":
-            avg = '"binary"' if is_classificacao else '"weighted"'
-            return [
-                f"print(f'  precision: {{precision_score(y_test, {y_pred}, average={avg}, zero_division=0):.4f}}')",
-            ]
-
-        if metrica == "recall":
-            avg = '"binary"' if is_classificacao else '"weighted"'
-            return [
-                f"print(f'  recall: {{recall_score(y_test, {y_pred}, average={avg}, zero_division=0):.4f}}')",
-            ]
-
-        if metrica == "RMSE":
-            return [
-                f"_rmse = np.sqrt(mean_squared_error(y_test, {y_pred}))",
-                "print(f'  RMSE: {_rmse:.4f}')",
-            ]
-
-        if metrica == "MAE":
-            return [f"print(f'  MAE: {{mean_absolute_error(y_test, {y_pred}):.4f}}')"]
-
-        if metrica == "R2":
-            return [f"print(f'  R2: {{r2_score(y_test, {y_pred}):.4f}}')"]
-
-=======
         if metrica == "f1_score":
             avg = '"binary"' if is_classificacao else '"weighted"'
             return [f"print(f'  f1_score: {{f1_score(y_test, {y_pred}, average={avg}):.4f}}')"]
@@ -301,7 +168,6 @@ class CodeGenerator:
             return [f"print(f'  MAE: {{mean_absolute_error(y_test, {y_pred}):.4f}}')"]
         if metrica == "R2":
             return [f"print(f'  R2: {{r2_score(y_test, {y_pred}):.4f}}')"]
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
         return []
 
     def _gerar_serializacao(self, nome_modelo: str, output_path: str) -> List[str]:
@@ -309,26 +175,11 @@ class CodeGenerator:
             "# --- Serialização do modelo ---",
             f"os.makedirs(os.path.dirname(OUTPUT_PATH) or '.', exist_ok=True)",
             f"joblib.dump({nome_modelo}, OUTPUT_PATH)",
-<<<<<<< HEAD
-            f"print(f'Modelo salvo em: {{OUTPUT_PATH}}')",
-        ]
-
-    def _gerar_algoritmo(self, modelo: ModeloNode) -> str:
-        """Mantido para compatibilidade com testes existentes."""
-        # 1. Limpa aspas e espaços que possam ter vindo da árvore sintática (AST)
-        alg_limpo = str(modelo.algoritmo).replace('"', '').replace("'", "").strip()
-
-        # 2. Busca no dicionário usando a string limpa
-        classe = _ALGORITMO_IMPORTS.get(alg_limpo, (None, alg_limpo))[1]
-
-=======
             f"print(f'Modelo saved: {{OUTPUT_PATH}}')",
         ]
 
     def _gerar_algoritmo(self, modelo: ModeloNode) -> str:
-        alg_limpo = str(modelo.algoritmo).replace('"', '').replace("'", "").strip()
-        classe = _ALGORITMO_IMPORTS.get(alg_limpo, (None, alg_limpo))[1]
->>>>>>> 983f51e9beaaf701502cf786779f8848ef12238d
+        classe = _ALGORITMO_IMPORTS.get(modelo.algoritmo, (None, modelo.algoritmo))[1]
         hiperparams = ", ".join(self._formatar_hiperparametro(h) for h in modelo.hiperparametros)
         if hiperparams:
             return f"{classe}({hiperparams})"
